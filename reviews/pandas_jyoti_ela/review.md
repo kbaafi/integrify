@@ -2,7 +2,6 @@
 
 * Submtted by Jyoti and Ela Kapoor
 
-
 ## Occupation Data
 
 * Data Read: check
