@@ -160,9 +160,54 @@ Ok, so now we have our docker image. And its time for me to go to work. I'll pus
 Lets run docker push to do this:
 
 ```$ sudo docker login --username=kbaafi``` to login to docker hub
+
 ```$ sudo docker tag 0e5679ebf079 kbaafi/dockerml:latest``` to tag the image on dockerhub
+
 ```$ sudo docker push kbaafi/dockerml``` to push the image to docker hub
 
 We can verify it below:
 
 ![docker-hub](images/dhub.png)
+
+
+## Aaand we're back: Pulling your image back from dockerhub
+
+A docker commit away, we built an image and pushed it to dockerhub. Now we're on the office laptop and we want to continue from there. Let's perform a docker pull to download the current version of our machine learning docker image:
+
+```$ sudo docker pull kbaafi/dockerml:latest```
+
+## A better way to build docker images
+
+So far we've seen how to build a docker image, push and pull to a different machine. We've done this manually so far. Let's now see how to build a docker vm from a Dockerfile which has all the configurations needed to run our applications.
+
+1. Create a new folder
+
+2. Create a file called ```Dockerfile``` which we will update with our configurations
+
+3. Create a file called ```requirements.txt```
+
+Now lets go ahead and edit our Dockerfile
+
+Enter the following lines into your Dockerfile
+
+> FROM python:3.7.3-stretch \
+\
+WORKDIR &nbsp;  /workdir \
+\
+COPY &nbsp;requirements.txt &nbsp; /workdir/requirements.txt\
+\
+RUN &nbsp;pip3 &nbsp;install --upgrade&nbsp; pip&nbsp;&& &nbsp;pip &nbsp;install --trusted-host pypi.python.org &nbsp;-r requirements.txt \
+\
+EXPOSE &nbsp;8888
+
+Now lets explain the contents of this Dockerfile
+
+**FROM python:3.7.3-stretch**: uses the image _python:3.7.3-stretch_ as a base image
+
+**WORKDIR &nbsp; /workdir**: creates a working directory in the root folder of the container
+
+**COPY &nbsp;requirements.txt &nbsp; /workdir/requirements.txt**: copy the requirements.txt (we assume it is in the current folder to the workdir)
+
+**RUN**: upgrades pip and installs the requirements
+
+**EXPOSE &nbsp;8888**: Exposes Jupyter default port from the container
