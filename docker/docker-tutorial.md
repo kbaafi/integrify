@@ -210,4 +210,80 @@ Now lets explain the contents of this Dockerfile
 
 **RUN**: upgrades pip and installs the requirements
 
-**EXPOSE &nbsp;8888**: Exposes Jupyter default port from the container
+**EXPOSE &nbsp;8888**: Exposes Jupyter's default network port from the container
+
+See [the Dockerfile](Dockerfile) and [the requirements file](requirements.txt) 
+
+### Building from the docker file
+
+Building from a well formed Dockerfile is quite easy just move to the location of the Dockerfile and run
+
+```$ sudo docker build . -t [repository:tag]```
+
+In our case we can run
+
+```$ sudo docker build . -t dockerml-2:latest```
+
+And we can run ```$ sudo docker image ls``` to confirm and we can now tag and push to DockerHub
+
+## An even fancier way: Automating your Docker builds by integrating DockerHub with Github
+
+Github+Docker is a match made in heaven that produces wonderful baby deployments. Lets see how this is done.
+
+* Create a github repository with the `Dockerfile` and `requirements.txt`
+* Login to your DockerHub account
+* Create a new repository on DockerHub
+    > Under the **Build Settings** of the **Create Repository** page, select your institution/ account and the repository
+
+* Click **Create & Build**
+
+![dhub](images/docker-git-2.png)
+
+This automatically begins to build a new docker image for you, with any commit to your Docker repository. Awesome right? 
+
+![dhub](images/auto-build-dhub.png)
+
+Now we have a case where not only is our image hosted in the cloud for easy access across all platforms, it is also continuously built after each commit to our git remote repository. Not bad for a beginner in Docker.
+
+Now that our image is being build directly on DockerHub, we can download the latest copy of the image by referring to the dockerhub repository. Let's run
+
+```sudo docker pull kbaafi/dockerml-git-integration:latest```
+
+>   <pre>REPOSITORY                        TAG                 IMAGE ID            CREATED             SIZE
+>kbaafi/dockerml-git-integration   latest              214cd1869376        11 minutes ago      1.49GB
+>kbaafi/dockerml                   latest              0e5679ebf079        4 hours ago         1.45GB
+></pre>  
+
+## Now lets run our ML lab environment
+
+**A few things to know:**
+
+Network communication between the host and the docker container: we have to align ports between host and the docker machine to ensure that networking communications reach the docker machine. Without this you may not be able to access jupyter on the host.
+
+When running the image you can use the following setting
+
+```-p <host_port>:<container_port>``` to connect between the host and the container
+
+Volume sharing between host and container: Volumes allow the container to write to files on the host and this is where **jupyter+docker** shines when used for machine learning projects. Volumes allow you to connect the working directory on the host to a directory in the container.
+
+You can use the option
+
+```-v host_directory:directory_in_docker``` to setup a volume
+
+### Running the container
+
+```$ sudo docker run -it -p 8888:8888 -v ~/condabooks:/workdir/jupyter kbaafi/dockerml-git-integration /bin/bash```
+
+With this setting, any changes I make in docker when in the folder `/workdir/jupyter` will be reflected on my local folder `~/condabooks`
+
+Now your jupyter machine should be running. Let's start jupyter on the docker machine
+
+```root@0917e6b1a74e:/workdir# cd jupyter```
+```root@0917e6b1a74e:/workdir/jupyter# jupyter lab . --ip 0.0.0.0 --allow-root --no-browser```
+
+Docker mostly runs in administrator privileges so the ``--allow-root`` flag must be set!
+
+The following link gives us access to Jupyter on Docker (yours may be different):
+
+`http://127.0.0.1:8888/?token=cf76aa79aebc78b2e719ed575c57afd856ae9cc47b88f2e5`
+
